@@ -1,16 +1,39 @@
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+import streamlit as st
+import pandas as pd
+import numpy as np
+import files_access
+import db_access
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+# Configuring the Main Stage
+st.set_page_config(page_title="Music Selection", layout='wide')
+st.title("Feature Selection based Music Selection")
+col1, col2 = st.columns([3, 7])  # 2 vertical Sections [30%, 70%]
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+
+@st.cache_data  # storing the file_names for select box
+def music_options():
+    return pd.DataFrame(db_access.read_db("SELECT name FROM `audio-data`"))['name'].tolist()
+
+
+# Starting Components
+with col1:
+    option = st.selectbox(
+        'Select Music',
+        ['-----Select Option-----'] + music_options())
+
+    if option != '-----Select Option-----':
+        st.markdown(f"Your Selection: **{option}**")
+        spec = files_access.return_spectrogram(option)
+        audio = files_access.return_audio(option)
+        st.image(spec)
+        st.audio(audio)
+
+        with col2:
+            with st.container():
+                st.write("This is inside the container")
+
+                # You can call any Streamlit command, including custom components:
+                st.bar_chart(np.random.randn(50, 3))
+
+            st.write("This is outside the container")

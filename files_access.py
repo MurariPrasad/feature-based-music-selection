@@ -7,7 +7,7 @@ import requests
 
 def return_spectrogram(file_name):
 
-    resp = requests.get(f"http://localhost:1212/spectrograms/{file_name}.png")
+    resp = requests.get(f"http://localhost:1212/display_spectrograms/{file_name}.png")
     img_bytes = resp.content
 
     return img_bytes

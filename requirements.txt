@@ -2,3 +2,10 @@ pandas
 numpy
 streamlit
 requests
+matplotlib
+tqdm
+librosa
+scipy
+tensorflow
+opencv-python
+joblib

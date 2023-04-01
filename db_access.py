@@ -23,12 +23,14 @@ def read_db(query: str):
     return response
 
 
-def write_db(query: str):
+def write_db(query: str,  values):
     conn = sql3.connect('database.db')
 
     assert "insert" in query.lower(), "Not an INSERT Query"
-    cursor = conn.execute(query)
+    conn.execute(query, values)
+    conn.commit()
 
 
 if __name__ == "__main__":
     read_db(""" select * from `audio-data` """)
+    write_db("")

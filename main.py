@@ -23,11 +23,12 @@ with col1:
         ['-----Select Option-----'] + music_options())
 
     if option != '-----Select Option-----':
-        st.markdown(f"Your Selection: **{option}**")
-        spec = files_access.return_spectrogram(option)
-        audio = files_access.return_audio(option)
-        st.image(spec)
-        st.audio(audio)
+        with st.container():
+            st.markdown(f"Your Selection: **{option}**")
+            spec = files_access.return_spectrogram(option)
+            audio = files_access.return_audio(option)
+            st.image(spec, width=500)
+            st.audio(audio)
 
         with col2:
             with st.container():

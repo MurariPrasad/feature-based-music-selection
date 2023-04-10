@@ -40,9 +40,9 @@ def initializer():
     alert.empty()
 
     st.markdown("""<style>div.block-container{padding-top:0rem;}</style>""", unsafe_allow_html=True)
-    with open("assets/random_staff2.png", "rb") as f:
-        data = base64.b64encode(f.read()).decode("utf-8")
-    st.markdown(f"""<img src="data:image/png;base64,{data}" width="100%" height="100">""", unsafe_allow_html=True)
+    # with open("assets/image.png", "rb") as f:
+    #     data = base64.b64encode(f.read()).decode("utf-8")
+    # st.markdown(f"""<img src="data:image/png;base64,{data}" width="100%" height="100">""", unsafe_allow_html=True)
     st.title("Feature Selection based Music Selection")
 
 

@@ -89,6 +89,13 @@ def main_stage():
                 top3 = files_access.return_spectrogram(spec_names[2])
                 top3_audio = files_access.return_audio(genres_names[2] + "/" + audio_names[2])
 
+                st.write("""<p>
+                                <div style='text-align:center; font-size:28px;'> 
+                                    <i>Top Selection of Similar Music</i> 
+                                </div> 
+                            </p>""",
+                         unsafe_allow_html=True)
+
                 sec1, sec2, sec3 = st.columns([1, 1, 1])
                 with sec1:
                     st.write(top_audio[0])

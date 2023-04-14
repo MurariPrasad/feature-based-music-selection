@@ -10,3 +10,4 @@ tensorflow
 torch
 opencv-python
 joblib
+aiohttp

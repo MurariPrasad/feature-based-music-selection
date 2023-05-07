@@ -5,7 +5,6 @@ import time
 import files_access
 import db_access
 import similarity
-import base64
 
 # Startup Config
 st.set_page_config(page_title="Music Selection", layout='wide')
@@ -13,13 +12,13 @@ st.set_page_config(page_title="Music Selection", layout='wide')
 
 @st.cache_data(show_spinner=False)  # storing the file_names for select box
 def audio_names_from_db():
-    return pd.DataFrame(db_access.read_db("SELECT name FROM `audio-data`"))
+    return pd.DataFrame(db_access.read_db(f"SELECT name FROM `{db_access.TABLE_PATH}`"))
 
 
 @st.cache_data(show_spinner=False)
 def similarity_calculation():
     enc_files = pd.DataFrame(
-        db_access.read_db("SELECT encoding_name FROM `audio-data`")
+        db_access.read_db(f"SELECT encoding_name FROM `{db_access.TABLE_PATH}`")
     )['encoding_name'].values.tolist()
     encodings = np.array([np.load(files_access.return_np_encoding(f)) for f in enc_files])
     sim_vector = similarity.ts_ss(encodings)
@@ -59,7 +58,7 @@ def main_stage():
             with st.container():
                 st.markdown(f"Your Selection: **{option}**")
                 selection = pd.DataFrame(
-                    db_access.read_db(f"SELECT genre, spec_name, audio_name FROM `audio-data` WHERE name = '{option}'"))
+                    db_access.read_db(f"SELECT genre, spec_name, audio_name FROM `{db_access.TABLE_PATH}` WHERE name = '{option}'"))
 
                 spec = files_access.return_spectrogram(selection['spec_name'].values[0])
                 audio_path = selection['genre'].values[0] + "/" + selection['audio_name'].values[0]
@@ -77,7 +76,7 @@ def main_stage():
 
                 sim_query = pd.DataFrame(
                     db_access.read_db(
-                        f"""SELECT spec_name, audio_name, genre FROM `audio-data` WHERE name IN("{top_audio[0]}", "{top_audio[1]}", "{top_audio[2]}")""")
+                        f"""SELECT spec_name, audio_name, genre FROM `{db_access.TABLE_PATH}` WHERE name IN("{top_audio[0]}", "{top_audio[1]}", "{top_audio[2]}")""")
                 )
                 spec_names = sim_query['spec_name'].values.tolist()
                 audio_names = sim_query['audio_name'].values.tolist()

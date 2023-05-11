@@ -15,6 +15,10 @@ st.set_page_config(page_title="Music Selection", layout='wide')
 def audio_names_from_db():
     return pd.DataFrame(db_access.read_db("SELECT name FROM `audio-data`"))
 
+@st.cache_data(show_spinner=False)  # storing the file_names for select box
+def audio_names_from_db1(option):
+    return pd.DataFrame(db_access.read_db(f"SELECT name FROM `audio-data` WHERE genre = '{option}'"))
+
 
 @st.cache_data(show_spinner=False)
 def similarity_calculation():
@@ -22,6 +26,7 @@ def similarity_calculation():
         db_access.read_db("SELECT encoding_name FROM `audio-data`")
     )['encoding_name'].values.tolist()
     encodings = np.array([np.load(files_access.return_np_encoding(f)) for f in enc_files])
+    #encodings = np.array(np.random.rand(0, 1000))
     sim_vector = similarity.ts_ss(encodings)
 
     return sim_vector.detach().cpu().numpy().copy()
@@ -45,70 +50,88 @@ def initializer():
     # st.markdown(f"""<img src="data:image/png;base64,{data}" width="100%" height="100">""", unsafe_allow_html=True)
     st.title("Feature Selection based Music Recommendation")
 
-
+audioz = '/home/linux_dev/music-rec-stream/001039.mp3'
+imgz = '/home/linux_dev/Downloads/wallpaperbetter.com_1920x1080 (1).jpg'
+option = None
+ind = None
 def main_stage():
     """
     main app
     """
     col1, col2 = st.columns([3, 7])  # 2 vertical Sections [30%, 70%]
     with col1:
-        options_list = audio_names_from_db()['name'].values.tolist()
-        option = st.selectbox('Select Music', ['-----Select Option-----'] + options_list)
+        #print(db_access.read_db("SELECT DISTINCT genre from `audio-data`"))
+        genre_list = pd.DataFrame(db_access.read_db("SELECT DISTINCT genre from `audio-data`"))
+        #options_list = audio_names_from_db()['name'].values.tolist()
+        option = st.selectbox('Select Music', genre_list)
 
-        if option != '-----Select Option-----':
-            with st.container():
-                st.markdown(f"Your Selection: **{option}**")
-                selection = pd.DataFrame(
-                    db_access.read_db(f"SELECT genre, spec_name, audio_name FROM `audio-data` WHERE name = '{option}'"))
+        #if option != '-----Select Option-----':
+        with st.container():
+            #options_list = pd.DataFrame(audio_names_from_db1(option).values.tolist())
+            options_list = pd.DataFrame(audio_names_from_db1(option).values.tolist())
+            #options_list
+            option = st.selectbox('Select Music', options_list)
+            st.markdown(f"Your Selection: **{option}**")
+            options_list = pd.DataFrame(audio_names_from_db()['name'].values.tolist())
+            selection = pd.DataFrame(
+                db_access.read_db(f"SELECT name, genre, spec_name, audio_name FROM `audio-data` WHERE name = '{option}'"))
+            selection
+            dict = {0: 'I'}
+            options_list.rename(columns=dict, inplace=True)
+            #options_list
+            #option
+            ind = options_list.index[options_list.I.str.match(option)]
+            #ind
+            spec = files_access.return_spectrogram(selection['spec_name'].values[0])
+            audio_path = selection['genre'].values[0] + "/" + selection['audio_name'].values[0]
+            audio = files_access.return_audio(audio_path)
 
-                spec = files_access.return_spectrogram(selection['spec_name'].values[0])
-                audio_path = selection['genre'].values[0] + "/" + selection['audio_name'].values[0]
-                audio = files_access.return_audio(audio_path)
+            #st.image(imgz)
+            #st.audio(audioz)
+            st.image(spec)
+            st.audio(audio)
 
-                st.image(spec)
-                st.audio(audio)
+        with col2:
+            #ind = option_list.index(option)
+            top_ind = np.argsort(similarity_calculation()[ind])[:5]  #
+            top_audio = [options_list[i] for i in top_ind]
+            if option in top_audio:
+                top_audio.remove(option)
 
-            with col2:
-                ind = options_list.index(option)
-                top_ind = np.argsort(similarity_calculation()[ind])[:5]  #
-                top_audio = [options_list[i] for i in top_ind]
-                if option in top_audio:
-                    top_audio.remove(option)
-
-                sim_query = pd.DataFrame(
+            sim_query = pd.DataFrame(
                     db_access.read_db(
                         f"""SELECT spec_name, audio_name, genre FROM `audio-data` WHERE name IN("{top_audio[0]}", "{top_audio[1]}", "{top_audio[2]}")""")
                 )
-                spec_names = sim_query['spec_name'].values.tolist()
-                audio_names = sim_query['audio_name'].values.tolist()
-                genres_names = sim_query['genre'].values.tolist()
-                top1 = files_access.return_spectrogram(spec_names[0])
-                top1_audio = files_access.return_audio(genres_names[0] + "/" + audio_names[0])
-                top2 = files_access.return_spectrogram(spec_names[1])
-                top2_audio = files_access.return_audio(genres_names[1] + "/" + audio_names[1])
-                top3 = files_access.return_spectrogram(spec_names[2])
-                top3_audio = files_access.return_audio(genres_names[2] + "/" + audio_names[2])
+            spec_names = sim_query['spec_name'].values.tolist()
+            audio_names = sim_query['audio_name'].values.tolist()
+            genres_names = sim_query['genre'].values.tolist()
+            top1 = files_access.return_spectrogram(spec_names[0])
+            top1_audio = files_access.return_audio(genres_names[0] + "/" + audio_names[0])
+            top2 = files_access.return_spectrogram(spec_names[1])
+            top2_audio = files_access.return_audio(genres_names[1] + "/" + audio_names[1])
+            top3 = files_access.return_spectrogram(spec_names[2])
+            top3_audio = files_access.return_audio(genres_names[2] + "/" + audio_names[2])
 
-                st.write("""<p>
+            st.write("""<p>
                                 <div style='text-align:center; font-size:28px;'> 
                                     <i>Top Selection of Similar Music</i> 
                                 </div> 
                             </p>""",
                          unsafe_allow_html=True)
 
-                sec1, sec2, sec3 = st.columns([1, 1, 1])
-                with sec1:
-                    st.write(top_audio[0])
-                    st.image(top1)
-                    st.audio(top1_audio)
-                with sec2:
-                    st.write(top_audio[1])
-                    st.image(top2)
-                    st.audio(top2_audio)
-                with sec3:
-                    st.write(top_audio[2])
-                    st.image(top3)
-                    st.audio(top3_audio)
+            #sec1, sec2, sec3 = st.columns([1, 1, 1])
+            #with sec1:
+            st.write(top_audio[0])
+            st.image(top1)
+            st.audio(top1_audio)
+                #with sec2:
+            st.write(top_audio[1])
+            st.image(top2)
+            st.audio(top2_audio)
+            #    with sec3:
+            st.write(top_audio[2])
+            st.image(top3)
+            st.audio(top3_audio)
 
 
 initializer()

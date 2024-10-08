@@ -1,5 +1,5 @@
 ## Feature Selection Based Music Selection
-### ***Paper Name:*** Feature Selection based Music Selection using Artificial Intelligence (Submitted to CONF-SEML 2023)
+### ***Paper Name:*** Feature Selection based Music Selection using Artificial Intelligence (Published in Proceedings of the 2023 International Conference on Software Engineering and Machine Learning. DOI: 10.54254/2755-2721/8/20230206)
 ***Authors:*** Murari Prasad, Apoorva Bordoloi, Hem Thumar, Manas Saloi, Deepanshu Joshi
 
 ***University Project Guide:*** Dr. Shubham Mahajan
